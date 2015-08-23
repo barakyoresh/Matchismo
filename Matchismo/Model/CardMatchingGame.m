@@ -10,7 +10,9 @@
 
 @interface CardMatchingGame()
 @property (nonatomic, readwrite) NSInteger score;
-@property (nonatomic, readwrite) NSString *gameMessage;
+@property (nonatomic, readwrite) NSArray *lastMoveChosenCards;
+@property (nonatomic, readwrite) NSInteger lastMoveScore;
+@property (nonatomic, readwrite) BOOL lastMoveMatch;
 @property (nonatomic, strong) NSMutableArray *cards; //of Card
 @property (nonatomic, readwrite) NSUInteger numberToMatch;
 @end
@@ -24,31 +26,31 @@ static const int COST_TO_CHOOSE = 1;
 
 - (NSUInteger) numberToMatch
 {
-    return _numberToMatch < 2 ? 2 : _numberToMatch; //can't match less than two cards
+  return _numberToMatch < 2 ? 2 : _numberToMatch; //can't match less than two cards
 }
 
 - (NSMutableArray *) cards
 {
-    if (!_cards) _cards = [[NSMutableArray alloc] init];
-    return _cards;
+  if (!_cards) _cards = [[NSMutableArray alloc] init];
+  return _cards;
 }
 
 - (instancetype) initWithCardCount:(NSUInteger)count usingDeck:(Deck *)deck
 {
-    self = [super init];
-    if (self) {
-        for (int i = 0; i < count; i++) {
-            Card *card = [deck drawRandomCard];
-            if (card) {
-                [self.cards addObject:card];
-            } else {
-                self = nil;
-                break;
-            }
-        }
+  self = [super init];
+  if (self) {
+    for (int i = 0; i < count; i++) {
+      Card *card = [deck drawRandomCard];
+      if (card) {
+        [self.cards addObject:card];
+      } else {
+        self = nil;
+        break;
+      }
     }
-    
-    return self;
+  }
+  
+  return self;
 }
 
 - (instancetype)initWithCardCount:(NSUInteger)count usingDeck:(Deck *) deck andMatching:(NSUInteger) matchCount
@@ -64,66 +66,87 @@ static const int COST_TO_CHOOSE = 1;
 
 - (instancetype) init
 {
-    return nil;
+  return nil;
 }
 
-- (NSString *) gameMessage
+- (NSArray *) lastMoveChosenCards
 {
-    if (!_gameMessage) _gameMessage = @"";
-    return _gameMessage;
+  if (!_lastMoveChosenCards) _lastMoveChosenCards = [[NSArray alloc] init];
+  return _lastMoveChosenCards;
 }
+
 
 - (Card *) cardAtIndex:(NSUInteger)index
 {
-    return [self.cards count] ? self.cards[index] : nil;
+  return [self.cards count] ? self.cards[index] : nil;
 }
 
 - (void) chooseCardAtIndex:(NSUInteger)index
 {
-    Card *card = [self cardAtIndex:index];
+  Card *card = [self cardAtIndex:index];
+  
+  
+  if (card.isMatched) {
+    return;
+  }
+  
+  if (!card.isChosen) {
+    card.chosen = YES;
+    [self tryToMatch:card];
+  } else {
+    card.chosen = NO;
+  }
+}
+
+
+- (void) tryToMatch:(Card *) card
+{
+  self.lastMoveMatch = NO;
+  self.lastMoveChosenCards = nil;
+  
+  [self updateScore:(-COST_TO_CHOOSE)];
+  
+  NSArray *chosenCards = [self otherCurrentlyChosenCards:card];
+  self.lastMoveChosenCards = [chosenCards arrayByAddingObject:card];
+  
+  //if enough cards were chosen check for match
+  if ([chosenCards count] + 1 == self.numberToMatch) {
+    int matchScore = [card match:chosenCards];
     
-    if (!card.isMatched) {
-        if (card.isChosen) {
-            card.chosen = NO;
-        } else {
-            // get chosen cards array
-            NSMutableArray *chosenCards = [[NSMutableArray alloc] init];
-            for (Card *otherCard in self.cards) {
-                if (otherCard.isChosen && !otherCard.isMatched) {
-                    [chosenCards addObject:otherCard];
-                }
-            }
-            
-            // for any choice, a penalty is given
-            card.chosen = YES;
-            self.score -= COST_TO_CHOOSE;
-            self.gameMessage = [NSString stringWithFormat:@"%@ Chosen! %d %@ penalty", card.contents, COST_TO_CHOOSE, COST_TO_CHOOSE == 1 ? @"point" : @"points"];
-            
-            // check for matching
-            if ([chosenCards count] + 1 >= self.numberToMatch) {
-                int matchScore = [card match:chosenCards];
-                if (matchScore) {
-                    self.score += matchScore * MATCH_BONUS;
-                    self.gameMessage = @"Matched ";
-                    for (Card *chosenCard in chosenCards) {
-                        chosenCard.matched = YES;
-                        self.gameMessage = [self.gameMessage stringByAppendingFormat:@"%@ ", chosenCard.contents];
-                    }
-                    card.matched = YES;
-                    self.gameMessage = [self.gameMessage stringByAppendingFormat:@"and %@ for %d %@!", card.contents, matchScore * MATCH_BONUS, matchScore * MATCH_BONUS == 1 ? @"point" : @"points"];
-                } else {
-                    self.score -= MISMATCH_PENALTY;
-                    self.gameMessage = @"";
-                    for (Card *chosenCard in chosenCards) {
-                        self.gameMessage = [self.gameMessage stringByAppendingFormat:@"%@ ", chosenCard.contents];
-                        chosenCard.chosen = NO;
-                    }
-                    card.chosen = NO;
-                    self.gameMessage = [self.gameMessage stringByAppendingFormat:@"and %@ Don't match! %d %@ penalty", card.contents, MISMATCH_PENALTY, MISMATCH_PENALTY == 1 ? @"point" : @"points"];
-                }
-            }
-        }
+    //cards matched
+    if (matchScore) {
+      self.lastMoveMatch = YES;
+      [self updateScore:matchScore * MATCH_BONUS];
+      
+      for (Card *chosenCard in chosenCards) {
+        chosenCard.matched = YES;
+      }
+      card.matched = YES;
+    } else {
+      [self updateScore:(-MISMATCH_PENALTY)];
+      
+      for (Card *chosenCard in chosenCards) {
+        chosenCard.chosen = NO;
+      }
+      card.chosen = NO;
     }
+  }
+}
+
+- (NSArray *) otherCurrentlyChosenCards:(Card *)card {
+  NSMutableArray *chosenCards = [[NSMutableArray alloc] init];
+  for (Card *otherCard in self.cards) {
+    if (otherCard.isChosen && !otherCard.isMatched && otherCard != card) {
+      [chosenCards addObject:otherCard];
+    }
+  }
+  return [chosenCards copy];
+}
+
+- (void) updateScore:(NSInteger) scoreDelta
+{
+  self.lastMoveScore = scoreDelta;
+  self.score += scoreDelta;
 }
 
 @end

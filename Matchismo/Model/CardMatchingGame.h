@@ -19,7 +19,9 @@
 - (Card *)cardAtIndex:(NSUInteger)index;
 
 @property (nonatomic, readonly) NSInteger score;
-@property (nonatomic, readonly) NSString *gameMessage;
+@property (nonatomic, readonly) NSArray *lastMoveChosenCards;
+@property (nonatomic, readonly) NSInteger lastMoveScore;
+@property (nonatomic, readonly) BOOL lastMoveMatch;
 @property (nonatomic, readonly) NSUInteger numberToMatch;
 
 
