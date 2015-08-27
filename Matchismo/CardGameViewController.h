@@ -15,7 +15,7 @@
 
 - (void)addNewCardFromDeckToBoard;
 
-- (void) updateUI;
+- (void)updateUI;
 
 @property (strong, nonatomic) CardMatchingGame *game;
 
@@ -23,19 +23,19 @@
 
 
 // abstract
--(Deck*)createDeck;
+- (Deck*)createDeck;
 
--(UIView *)viewForCard:(Card *)card inFrame:(CGRect)rect;
+- (UIView *)viewForCard:(Card *)card inFrame:(CGRect)rect;
 
--(void)updateView:(UIView *)view ForCard:(Card *)card Completion:(void(^)(BOOL))completion;
+- (void)updateView:(UIView *)view ForCard:(Card *)card Completion:(void(^)(BOOL))completion;
 
--(void)cardOnBoardCountChanged;
+- (void)cardOnBoardCountChanged;
 
-@property (nonatomic) NSUInteger matchCount;
+@property (nonatomic)NSUInteger matchCount;
 
-@property (nonatomic) NSUInteger cardCount;
+@property (nonatomic)NSUInteger cardCount;
 
-@property (nonatomic) CGFloat cardAspectRatio;
+@property (nonatomic)CGFloat cardAspectRatio;
 
 @end
 

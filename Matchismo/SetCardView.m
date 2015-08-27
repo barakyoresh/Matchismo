@@ -197,7 +197,6 @@
       [bezierPath fill];
       break;
     case striped:
-      // starting from ex5 this would have been a category method of UIBezierPath
       [self fillSetShape:bezierPath
          withStripeWidth:(bezierPath.bounds.size.width * STRIPE_TO_WIDTH_RATIO)
        andStripeDistance:(bezierPath.bounds.size.width * STRIPE_TO_WIDTH_RATIO * 4)];
@@ -208,6 +207,7 @@
   }
 }
 
+// have I officially learned categories this would have been a category method of UIBezierPath
 - (void) fillSetShape:(UIBezierPath *)bezierPath
      withStripeWidth:(CGFloat)stripeWidth
     andStripeDistance:(CGFloat)stripeDistance{

@@ -15,6 +15,8 @@
 
 @implementation SetCard
 
+#define SET_MATCH_BASIC_SCORE 4
+
 - (instancetype) init {
   return nil;
 }
@@ -51,7 +53,7 @@
 
 - (int)match:(NSArray *)otherCards
 {
-  int score = 4;
+  int score = SET_MATCH_BASIC_SCORE;
   
   NSMutableArray *cards = [otherCards mutableCopy];
   [cards addObject:self];

@@ -10,13 +10,13 @@
 
 @interface SetCardView : UIView
 
-typedef NS_ENUM(NSInteger, SetShape) {
+typedef NS_ENUM(NSUInteger, SetShape) {
   diamond,
   squiggle,
   oval
 };
 
-typedef NS_ENUM(NSInteger, SetShading) {
+typedef NS_ENUM(NSUInteger, SetShading) {
   solid,
   striped,
   none

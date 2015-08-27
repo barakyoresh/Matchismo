@@ -26,7 +26,7 @@
 #define CARD_CREATION_ORIGIN_Y 0
 
 
-- (CardMatchingGame *) game
+- (CardMatchingGame *)game
 {
   if (!_game) {
   _game = [[CardMatchingGame alloc] initWithCardCount:self.cardCount
@@ -36,25 +36,25 @@
   return _game;
 }
 
-- (CGPoint) offScreenPoint { return CGPointMake(self.view.bounds.size.width * 2,
+- (CGPoint)offScreenPoint { return CGPointMake(self.view.bounds.size.width * 2,
                                                 -self.view.bounds.size.height); }
 
-- (NSUInteger) cardsOnBoard {
+- (NSUInteger)cardsOnBoard {
   return [[self.gameBoard subviews] count];
 }
 
-- (NSMutableArray *) cardViews {
+- (NSMutableArray *)cardViews {
   if (!_cardViews) _cardViews = [[NSMutableArray alloc] init];
   return _cardViews;
 }
 
-- (void) viewDidLoad {
+- (void)viewDidLoad {
   self.gameBoard.backgroundColor = nil;
   self.gameBoard.opaque = NO;
   self.gameBoard.clipsToBounds = YES;
 }
 
-- (void) viewDidAppear:(BOOL)animated {
+- (void)viewDidAppear:(BOOL)animated {
   if (!self.boardInitiated) {
     [self initGameGridWithCells:self.cardCount
                  andAspectRatio:self.cardAspectRatio];
@@ -63,7 +63,7 @@
   }
 }
 
-- (void) initGameGridWithCells:(NSUInteger) cellCount andAspectRatio:(CGFloat) ratio {
+- (void)initGameGridWithCells:(NSUInteger) cellCount andAspectRatio:(CGFloat) ratio {
   self.gameBoardGrid = [[InsetGrid alloc] init];
   self.gameBoardGrid.size = self.gameBoard.frame.size;
   self.gameBoardGrid.cellAspectRatio = ratio;
@@ -75,7 +75,7 @@
   }
 }
 
-- (void) addNewCardFromDeckToBoard {
+- (void)addNewCardFromDeckToBoard {
   NSUInteger currentIndex = self.game.activeCardCount;
   [self.game addCardFromDeck];
   if (currentIndex != self.game.activeCardCount) {
@@ -95,7 +95,7 @@
   [self cardOnBoardCountChanged];
 }
 
-- (UIView *) createCardViewForCard:(Card *)card {
+- (UIView *)createCardViewForCard:(Card *)card {
   CGRect originScreenRect = CGRectMake(CARD_CREATION_ORIGIN_X,
                                     CARD_CREATION_ORIGIN_Y,
                                     self.gameBoardGrid.insetCellSize.width,
@@ -109,21 +109,21 @@
   return cardView;
 }
 
-- (NSInteger) gridRowByIndex:(NSInteger)index {
+- (NSUInteger)gridRowByIndex:(NSUInteger)index {
   return (index / self.gameBoardGrid.columnCount);
 }
 
-- (NSInteger) gridColumnByIndex:(NSInteger)index {
+- (NSUInteger)gridColumnByIndex:(NSUInteger)index {
   return (index % self.gameBoardGrid.columnCount);
 
 }
 
-- (CGPoint) gridCellCenterAtIndex:(NSUInteger)index {
+- (CGPoint)gridCellCenterAtIndex:(NSUInteger)index {
   return [self.gameBoardGrid centerOfCellAtRow:[self gridRowByIndex:index]
                                       inColumn:[self gridColumnByIndex:index]];
 }
 
-- (void) addAllCardsToBoard {
+- (void)addAllCardsToBoard {
   for (int i = 0; i < self.game.activeCardCount; i++) {
     Card *card = [self.game cardAtIndex:i];
     [self addCardViewToBoard:[self createCardViewForCard:card]];
@@ -156,11 +156,11 @@
   return [activeCardViews copy];
 }
 
-- (Card *) cardByCardView:(UIView *)cardView {
+- (Card *)cardByCardView:(UIView *)cardView {
   return [self.game cardAtIndex:[self.cardViews indexOfObject:cardView]];
 }
 
-- (NSArray *) activeCardViewsWithCorrespondingCardMatched:(BOOL)matched {
+- (NSArray *)activeCardViewsWithCorrespondingCardMatched:(BOOL)matched {
   NSMutableArray *matchedActiveCardViews = [[NSMutableArray alloc] init];
   for (UIView *activeCardView in [self activeCardViews]) {
     if ([self cardByCardView:activeCardView].isMatched == matched) {
@@ -184,7 +184,7 @@
   }
 }
 
-- (void) clearUI
+- (void)clearUI
 {
   for (UIView *cardView in [self.cardViews copy]) {
     [cardView removeFromSuperview];
@@ -193,7 +193,7 @@
   [self.score setText: [NSString stringWithFormat:@"Score: %d", 0]];
 }
 
-- (void) updateUI {
+- (void)updateUI {
   __weak id weakSelf = self;
   for (UIView *activeCardView in [self activeCardViews]) {
     [self updateView:activeCardView
@@ -225,16 +225,16 @@
 
 #pragma abstract
 
-- (Deck *) createDeck {
+- (Deck *)createDeck {
   return nil;
 }
 
 
-- (void) updateView:(UIView *)view ForCard:(Card *)card Completion:(void (^)(BOOL))completion {
+- (void)updateView:(UIView *)view ForCard:(Card *)card Completion:(void (^)(BOOL))completion {
 }
 
 
-- (UIView *) viewForCard:(Card *)card inFrame:(CGRect)rect {
+- (UIView *)viewForCard:(Card *)card inFrame:(CGRect)rect {
   return nil;
 }
 

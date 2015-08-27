@@ -12,22 +12,20 @@
 #import "PlayingCard.h"
 #import "PlayingCardView.h"
 
-@interface PlayingCardViewController ()
-@end
 @implementation PlayingCardViewController
 
-- (NSUInteger) matchCount{return 2;}
+- (NSUInteger)matchCount{return 2;}
 
-- (NSUInteger) cardCount {return 30;}
+- (NSUInteger)cardCount {return 30;}
 
-- (CGFloat) cardAspectRatio {return 2.0/3.0;}
+- (CGFloat)cardAspectRatio {return 2.0/3.0;}
 
-- (Deck *) createDeck
+- (Deck *)createDeck
 {
   return [[PlayingCardDeck alloc] init];
 }
 
-- (void) updateView:(UIView *)view ForCard:(Card *)card Completion:(void(^)(BOOL))completion{
+- (void)updateView:(UIView *)view ForCard:(Card *)card Completion:(void(^)(BOOL))completion{
   if (![view isKindOfClass:[PlayingCardView class]] || ![card isKindOfClass:[PlayingCard class]]) {
     if (completion) {
       completion(NO);
@@ -50,7 +48,7 @@
 }
 
 
-- (UIView *) viewForCard:(Card *)card inFrame:(CGRect)rect{
+- (UIView *)viewForCard:(Card *)card inFrame:(CGRect)rect{
   if (![card isKindOfClass:[PlayingCard class]]) {
     return nil;
   }
