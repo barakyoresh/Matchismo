@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 Barak Yoresh. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "CardGameViewController.h"
 
-@interface PlayingCardViewController : ViewController
+@interface PlayingCardViewController : CardGameViewController
 
 @end

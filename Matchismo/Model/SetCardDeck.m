@@ -27,13 +27,13 @@
   if (self) {
     self.featureCount = count;
     self.featurePossibilites = possibilites;
-    [self recursivlyAddAllPermutationsToDeckForFeatures:[[NSArray alloc] init]];
+    [self addAllPermutationsToDeckForFeatures:[[NSArray alloc] init]];
   }
   return self;
 }
 
 
-- (void) recursivlyAddAllPermutationsToDeckForFeatures:(NSArray *) features
+- (void) addAllPermutationsToDeckForFeatures:(NSArray *) features
 {
   // stop condition - feature array is in the correct length
   if ([features count] >= self.featureCount) {
@@ -48,7 +48,7 @@
   for (int i = 0; i < self.featurePossibilites; i++) {
     NSMutableArray *currentFeatures = [features mutableCopy];
     [currentFeatures addObject:[NSNumber numberWithInt:i]];
-    [self recursivlyAddAllPermutationsToDeckForFeatures:currentFeatures];
+    [self addAllPermutationsToDeckForFeatures:currentFeatures];
     
   }
   return;

@@ -34,7 +34,7 @@
 @synthesize suit = _suit;
 + (NSArray *) validSuits
 {
-  return @[@"♠️", @"♣️", @"♥️", @"♦️"];
+  return @[@"♠", @"♣", @"♥", @"♦"];
 }
 - (NSString *) suit
 {

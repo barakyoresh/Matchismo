@@ -9,135 +9,82 @@
 #import "SetCardViewController.h"
 #import "SetCardDeck.h"
 #import "SetCard.h"
+#import "SetCardView.h"
 
-@interface SetCardViewController ()
-
+@interface SetCardViewController()
+@property (weak, nonatomic) IBOutlet UIButton *dealNMoreCardsButton;
 @end
 
 @implementation SetCardViewController
+
 
 - (NSUInteger) matchCount{return 3;}
 
 - (NSUInteger) cardCount {return 36;}
 
+- (CGFloat) cardAspectRatio {return 3.0/4.0;}
+
 - (Deck *) createDeck {
-  return [[SetCardDeck alloc] initWithFeatureCount:4 andPossibilites:3];
+  return [[SetCardDeck alloc] initWithFeatureCount:4
+                                   andPossibilites:3];
 }
 
-typedef NS_ENUM(NSInteger, _name) {
-  setGameNumber,
+#define DEAL_MORE_CARDS_COUNT 3
+
+typedef NS_ENUM(NSInteger, SetCardFeature) {
+  setGameCount = 0,
   setGameShape,
   setGameColor,
   setGameShading
 };
 
-+ (NSArray *) setGameSahpes {
-  return @[@"▲", @"●", @"■"];
+- (void) viewDidLoad {
+  [super viewDidLoad];
+  [self.dealNMoreCardsButton setTitle:[NSString stringWithFormat:@"Deal %d more cards",
+                                       DEAL_MORE_CARDS_COUNT]
+                             forState:UIControlStateNormal];
 }
 
-+ (NSArray *) setGameColors {
-  return @[[UIColor redColor], [UIColor greenColor], [UIColor blueColor]];
-}
-
-+ (NSArray *) setGameShadings {
-  return @[@1.0, @0.3, @0.0];
-}
-
-
-- (NSString *) shapeForIndex:(NSUInteger)index {
-  if (index > 2) {
-    return @"?";
+- (void) updateView:(UIView *)view ForCard:(Card *)card Completion:(void(^)(BOOL))completion {
+  if (![view isKindOfClass:[SetCardView class]]) {
+    if (completion) {
+      completion(NO);
+    }
+      return;
   }
   
-  return [SetCardViewController setGameSahpes][index];
-}
-
-- (UIColor *) colorForIndex:(NSUInteger)index {
-  if (index > 2) {
-    return [UIColor blackColor];
+  SetCardView *setCardView = (SetCardView *) view;
+  if (setCardView.fadedOut != card.isChosen) {
+    setCardView.fadedOut = card.isChosen;
+    if (completion) {
+      completion(YES);
+    }
   }
-  
-  return [SetCardViewController setGameColors][index];
 }
 
-- (CGFloat) shadingForIndex:(NSUInteger)index {
-  if (index > 2) {
-    return 1.0;
-  }
-  
-  return [[SetCardViewController setGameShadings][index] floatValue];
-}
 
-- (NSDictionary *) nameForCardStringAttributesByColor:(UIColor *)color andShading:(CGFloat)shade {
-  return @{NSForegroundColorAttributeName : [color colorWithAlphaComponent:shade],
-           NSStrokeColorAttributeName : color,
-           NSStrokeWidthAttributeName : @-5};
-}
-
-- (NSAttributedString *) nameForCard:(Card *)card {
+- (UIView *) viewForCard:(Card *)card inFrame:(CGRect)rect{
   if (![card isKindOfClass:[SetCard class]]) {
-    return [[NSAttributedString alloc] initWithString:@""];
+    return nil;
   }
-  
-  NSArray *cardFeatures = ((SetCard *) card).features;
-  
-  NSString *nameString = @"";
-  for (int i = 0; i <= [cardFeatures[setGameNumber] integerValue]; i++) { // number
-    // shape
-    nameString = [nameString stringByAppendingString:
-                  [self shapeForIndex:[cardFeatures[setGameShape] integerValue]]];
+  SetCard *setCard = (SetCard *)card;
+  SetCardView *cardView = [[SetCardView alloc] initWithFrame:rect];
+  cardView.count = [setCard.features[setGameCount] integerValue] + 1;
+  cardView.color = [SetCardView validColors][[setCard.features[setGameColor] integerValue]];
+  cardView.shading = [setCard.features[setGameShading] integerValue];
+  cardView.shape = [setCard.features[setGameShape] integerValue];
+  return cardView;
+}
+
+- (void) cardOnBoardCountChanged {
+  self.dealNMoreCardsButton.enabled = (self.cardsOnBoard + DEAL_MORE_CARDS_COUNT <= self.cardCount);
+}
+
+- (IBAction)dealNMoreCards:(UIButton *)sender {
+  for (int i = 0; i < DEAL_MORE_CARDS_COUNT; i++) {
+    [self addNewCardFromDeckToBoard];
   }
-  
-  //color and shading
-  UIColor *color = [self colorForIndex:[cardFeatures[setGameColor] integerValue]];
-  CGFloat shading = [self shadingForIndex:[cardFeatures[setGameShading] integerValue]];
-  NSDictionary *cardAttributes = [self nameForCardStringAttributesByColor:color
-                                                               andShading:shading];
-  
-  
-  NSAttributedString *name = [[NSAttributedString alloc] initWithString:nameString
-                                                             attributes:cardAttributes];
-  
-  return name;
 }
 
-- (NSAttributedString *) titleForCard:(Card *)card {
-  return card.isMatched ? [[NSAttributedString alloc] initWithString:@""] : [self nameForCard:card];
-}
-
-- (UIImage *) backgroundImageForCard:(Card *)card {
-  if (card.isMatched) {
-    return [UIImage imageNamed:@"cardback"];
-  }
-  
-  UIImage *image = [UIImage imageNamed:@"cardfront"];
-  return card.isChosen ? [self imageByApplyingAlpha:image withAlpha:0.5] : image;
-}
-
-
-// Daniel - This is code from the web - what are the guidelines with this kind of thing?
-// Code from web:
-// http://stackoverflow.com/questions/5084845/how-to-set-the-opacity-alpha-of-a-uiimage
-- (UIImage *)imageByApplyingAlpha:(UIImage *) image withAlpha:(CGFloat) alpha {
-  UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0f);
-  
-  CGContextRef ctx = UIGraphicsGetCurrentContext();
-  CGRect area = CGRectMake(0, 0, image.size.width, image.size.height);
-  
-  CGContextScaleCTM(ctx, 1, -1);
-  CGContextTranslateCTM(ctx, 0, -area.size.height);
-  
-  CGContextSetBlendMode(ctx, kCGBlendModeMultiply);
-  
-  CGContextSetAlpha(ctx, alpha);
-  
-  CGContextDrawImage(ctx, area, image.CGImage);
-  
-  UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-  
-  UIGraphicsEndImageContext();
-  
-  return newImage;
-}
 
 @end

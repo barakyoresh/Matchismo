@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Barak Yoresh. All rights reserved.
 //
 
-#import "ViewController.h"
+#import "CardGameViewController.h"
 
-@interface MovesHistoryViewController : ViewController
+@interface MovesHistoryViewController : CardGameViewController
 
 @property (strong, nonatomic) NSArray *moveHistory;
 

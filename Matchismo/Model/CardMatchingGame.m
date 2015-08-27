@@ -10,10 +10,8 @@
 
 @interface CardMatchingGame()
 @property (nonatomic, readwrite) NSInteger score;
-@property (nonatomic, readwrite) NSArray *lastMoveChosenCards;
-@property (nonatomic, readwrite) NSInteger lastMoveScore;
-@property (nonatomic, readwrite) BOOL lastMoveMatch;
-@property (nonatomic, strong) NSMutableArray *cards; //of Card
+@property (strong, nonatomic) NSMutableArray *cards; //of Card
+@property (strong, nonatomic) Deck *deck;
 @property (nonatomic, readwrite) NSUInteger numberToMatch;
 @end
 
@@ -39,18 +37,24 @@ static const int COST_TO_CHOOSE = 1;
 {
   self = [super init];
   if (self) {
+    self.deck = deck;
     for (int i = 0; i < count; i++) {
-      Card *card = [deck drawRandomCard];
-      if (card) {
-        [self.cards addObject:card];
-      } else {
-        self = nil;
-        break;
-      }
+      [self addCardFromDeck];
     }
   }
   
   return self;
+}
+
+- (void) addCardFromDeck {
+  Card *card = [self.deck drawRandomCard];
+  if (card) {
+    [self.cards addObject:card];
+  }
+}
+
+- (NSUInteger) activeCardCount {
+  return [self.cards count];
 }
 
 - (instancetype)initWithCardCount:(NSUInteger)count usingDeck:(Deck *) deck andMatching:(NSUInteger) matchCount
@@ -68,13 +72,6 @@ static const int COST_TO_CHOOSE = 1;
 {
   return nil;
 }
-
-- (NSArray *) lastMoveChosenCards
-{
-  if (!_lastMoveChosenCards) _lastMoveChosenCards = [[NSArray alloc] init];
-  return _lastMoveChosenCards;
-}
-
 
 - (Card *) cardAtIndex:(NSUInteger)index
 {
@@ -101,13 +98,9 @@ static const int COST_TO_CHOOSE = 1;
 
 - (void) tryToMatch:(Card *) card
 {
-  self.lastMoveMatch = NO;
-  self.lastMoveChosenCards = nil;
-  
   [self updateScore:(-COST_TO_CHOOSE)];
   
   NSArray *chosenCards = [self otherCurrentlyChosenCards:card];
-  self.lastMoveChosenCards = [chosenCards arrayByAddingObject:card];
   
   //if enough cards were chosen check for match
   if ([chosenCards count] + 1 == self.numberToMatch) {
@@ -115,7 +108,6 @@ static const int COST_TO_CHOOSE = 1;
     
     //cards matched
     if (matchScore) {
-      self.lastMoveMatch = YES;
       [self updateScore:matchScore * MATCH_BONUS];
       
       for (Card *chosenCard in chosenCards) {
@@ -145,7 +137,6 @@ static const int COST_TO_CHOOSE = 1;
 
 - (void) updateScore:(NSInteger) scoreDelta
 {
-  self.lastMoveScore = scoreDelta;
   self.score += scoreDelta;
 }
 
